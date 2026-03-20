@@ -2,29 +2,29 @@ import axios from 'axios';
 
 const BASE_URL = 'http://localhost:8080/api';
 
+const client = axios.create({ baseURL: BASE_URL });
+
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 export const api = {
-    registerPatient: (data) =>
-        axios.post(`${BASE_URL}/patients/register`, data),
-
-    getPatientStatus: (id) =>
-        axios.get(`${BASE_URL}/appointments/${id}/status`),
-
-    addDoctor: (data) =>
-        axios.post(`${BASE_URL}/doctors/add`, data),
-
-    bookAppointment: (patientId, doctorId, scheduledTime) =>
-        axios.post(`${BASE_URL}/appointments/book`, null, {
-            params: { patientId, doctorId, scheduledTime }
-        }),
-
-    getQueue: (doctorId) =>
-        axios.get(`${BASE_URL}/appointments/queue/${doctorId}`),
-
-    markDone: (appointmentId) =>
-        axios.put(`${BASE_URL}/appointments/${appointmentId}/done`),
-
-    handleDelay: (doctorId, delayMinutes) =>
-        axios.put(`${BASE_URL}/appointments/delay/${doctorId}`, null, {
-            params: { delayMinutes }
-        }),
+  login: (data) => client.post('/auth/login', data),
+  register: (data) => client.post('/auth/register', data),
+  applyDoctor: (data) => client.post('/doctor-applications/apply', data),
+  getPendingApplications: () => client.get('/doctor-applications/pending'),
+  getAllApplications: () => client.get('/doctor-applications/all'),
+  approveApplication: (id) => client.put(`/doctor-applications/${id}/approve`),
+  rejectApplication: (id, reason) =>
+    client.put(`/doctor-applications/${id}/reject`, null, { params: { reason } }),
+  registerPatient: (data) => client.post('/patients/register', data),
+  getPatientStatus: (id) => client.get(`/appointments/${id}/status`),
+  bookAppointment: (patientId, doctorId, scheduledTime) =>
+    client.post('/appointments/book', null, { params: { patientId, doctorId, scheduledTime } }),
+  getQueue: (doctorId) => client.get(`/appointments/queue/${doctorId}`),
+  markDone: (appointmentId) => client.put(`/appointments/${appointmentId}/done`),
+  handleDelay: (doctorId, delayMinutes) =>
+    client.put(`/appointments/delay/${doctorId}`, null, { params: { delayMinutes } }),
 };
