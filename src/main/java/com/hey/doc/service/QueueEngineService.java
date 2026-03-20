@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class QueueEngineService {
     private final AppointmentRepository appointmentRepository;
-
+    private final DoctorService doctorService;
     // 1. PRIORITY SCORE ALGORITHM
     public int calculatePriorityScore(Patient patient, LocalDateTime bookedAt) {
         // base score
@@ -137,5 +137,26 @@ public class QueueEngineService {
                 getNextPatient(appointment.getDoctor().getId());
             }
         }
+    }
+
+    // 7. OVERBOOKING ALGORITHM — AIRLINE LOGIC
+    public boolean canAcceptBooking(Long doctorId) {
+        Doctor doctor = doctorService.getDoctorById(doctorId);
+    
+        // Historical no-show rate — 20% assume kar rahe hain
+        double noShowRate = 0.20;
+        
+        // Max allowed bookings = actual slots + buffer
+        int maxSlots = doctor.getMaxPatientsPerDay();
+        int allowedBookings = (int) Math.ceil(maxSlots / (1 - noShowRate));
+        // e.g. 20 slots → allow 25 bookings (20% will not show up)
+
+        // Aaj kitne book hue hain
+        long todayBookings = appointmentRepository
+                .findByDoctorIdAndStatus(doctorId, AppointmentStatus.WAITING).size()
+                + appointmentRepository
+                .findByDoctorIdAndStatus(doctorId, AppointmentStatus.IN_PROGRESS).size();
+
+        return todayBookings < allowedBookings;
     }
 }
