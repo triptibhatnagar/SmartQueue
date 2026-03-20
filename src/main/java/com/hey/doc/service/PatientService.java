@@ -9,15 +9,15 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-class PatientService {
+public class PatientService {
     private final PatientRepository patientRepository;
 
     // post
-    public Patient registerPatient(@lombok.NonNull Patient patient) {
+    public Patient registerPatient(Patient patient) {
         return patientRepository.save(patient);
     }
     // get
-    public Patient getPatientById(@lombok.NonNull Long id) {
+    public Patient getPatientById(Long id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Patient not found"));
     }
