@@ -17,7 +17,7 @@ public class DoctorService {
         return doctorRepository.save(doctor);
     }
     // get
-    public Doctor getDoctorById(@lombok.NonNull Long id) {
+    public Doctor getDoctorById(Long id) {
         return doctorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
     }
