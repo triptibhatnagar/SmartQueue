@@ -22,11 +22,16 @@ public class AppointmentController {
 
     // ── Appointment book karo ──
     @PostMapping("/book")
-    public ResponseEntity<Appointment> bookAppointment(
+    public ResponseEntity<?> bookAppointment(
             @RequestParam Long patientId,
             @RequestParam Long doctorId,
             @RequestParam String scheduledTime) {
-
+            
+        if (!queueEngineService.canAcceptBooking(doctorId)) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Sorry, no slots available for today.");
+        }
         Patient patient = patientService.getPatientById(patientId);
         Doctor doctor = doctorService.getDoctorById(doctorId);
         LocalDateTime time = LocalDateTime.parse(scheduledTime);
